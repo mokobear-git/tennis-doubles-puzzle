@@ -199,7 +199,7 @@
     $('tolist').onclick = () => { token++; show('home'); };
   }
 
-  function setPanel(h) { const p = $('panel'); p.innerHTML = h; p.scrollTop = 0; }
+  function setPanel(h) { const p = $('panel'); p.innerHTML = h; p.scrollTop = 0; p.classList.toggle('askp', h.indexOf('class="opts"') >= 0); }
 
   renderHome();
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
