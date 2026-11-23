@@ -67,12 +67,20 @@
   function run(events, opts, state) {
     const tl = compile(state || cur.state, events);
     lastTl = tl; runner.mul = speed;
-    $('skip').hidden = false;
+    $('skip').hidden = false; setRunning(true);
     return runner.play(tl, {
       onEvent: (i, e) => { opts && opts.onEvent && opts.onEvent(e); },
       onFrame: (b, e) => updateChip(b, e)
-    }).then(() => { $('skip').hidden = true; return tl; });
+    }).then(() => { $('skip').hidden = true; setRunning(false); redraw(); return tl; });
   }
+
+  /* 拡大モード：ラリー再生中だけ下の説明欄を細くして、コートを大きく表示する */
+  let zoomOn = true;
+  try { zoomOn = localStorage.getItem('tdp_zoom') !== '0'; } catch (e) { /* noop */ }
+  function applyZoom() { $('play').classList.toggle('zoom', zoomOn); $('zm').textContent = zoomOn ? '🔍 拡大中' : '🔍 拡大'; }
+  function setRunning(b) { $('play').classList.toggle('running', b); if (stage) stage.resize(); }
+  $('zm').onclick = () => { zoomOn = !zoomOn; try { localStorage.setItem('tdp_zoom', zoomOn ? '1' : '0'); } catch (e) { /* noop */ } applyZoom(); if (stage) { stage.resize(); redraw(); } };
+  applyZoom();
   $('skip').onclick = () => runner && runner.skip();
 
   /* 繝ｩ繝ｪ繝ｼ縺ｮ蜀咲函・域怙蛻昴°繧臥樟蝨ｨ縺ｮ蝣ｴ髱｢縺ｾ縺ｧ・・*/
@@ -128,7 +136,7 @@
     const opts = st.opts.map((o, i) => ({ o, i }));
     for (let i = opts.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [opts[i], opts[j]] = [opts[j], opts[i]]; }
     const L = 'ABCD';
-    setPanel('<div class="pad"><div class="qh">第' + (cur.si + 1) + '場面 / ' + cur.p.steps.length + '</div><p class="q">' + esc(st.q) + '</p><div class="opts">' +
+    setPanel('<div class="pad">' + (cur.lastFb ? '<details class="prev"><summary>前の場面の解説を見る</summary>' + cur.lastFb + '</details>' : '') + '<div class="qh">第' + (cur.si + 1) + '場面 / ' + cur.p.steps.length + '</div><p class="q">' + esc(st.q) + '</p><div class="opts">' +
       opts.map((x, k) => '<button class="opt" data-i="' + x.i + '"><b>' + L[k] + '</b>' + esc(x.o.t) + '</button>').join('') + '</div></div>');
     $('panel').querySelectorAll('.opt').forEach(b => b.onclick = () => answer(+b.dataset.i));
     startIdle();
@@ -146,6 +154,7 @@
     const fb = '<div class="fb f' + o.ok + '"><b>' + icon + '</b>' +
       '<div class="who">' + (o.ok === 2 ? 'あなたの選択（ベスト）' : 'あなたの選択') + '</div><div class="pick">「' + esc(o.t) + '」</div><p>' + esc(o.fb) + '</p>' +
       (o.ok < 2 ? '<div class="who best">ベストの手</div><div class="pick">「' + esc(best.t) + '」</div><p>' + esc(best.fb) + '</p>' : '') + '</div>';
+    cur.lastFb = fb;
     if (o.ok === 2) {
       await playMain(fb, my);
     } else if (o.alt) {

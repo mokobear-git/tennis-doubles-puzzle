@@ -127,7 +127,7 @@
   function Stage(canvas, side) {
     this.cv = canvas; this.ctx = canvas.getContext('2d');
     this.side = side; this.sctx = side.getContext('2d');
-    this.mx0 = -1.4; this.mx1 = CW + 1.4; this.my0 = -3.2; this.my1 = CL + 3.0;
+    this.mx0 = -1.0; this.mx1 = CW + 1.0; this.my0 = -2.7; this.my1 = CL + 2.3;
     this.resize();
   }
   Stage.prototype.resize = function () {
